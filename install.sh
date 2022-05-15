@@ -40,7 +40,7 @@ function checkRequirement () {
 }
 
 checkRequirement "wget"
-checkRequirement "unzip"
+checkRequirement "7z"
 
 info "Archive URL: $ARCHIVE_URL"
 info "Trying to find the correct directory..."
@@ -74,7 +74,8 @@ if [ -n "$haPath" ]; then
     wget -t 2 -O "$ccPath/$ARCHIVE_TAG.zip" "$ARCHIVE_URL"
 
     info "Unpacking..."
-    unzip -o "$ccPath/$ARCHIVE_TAG.zip" -d "$ccPath" >/dev/null 2>&1
+    # unzip -o "$ccPath/$ARCHIVE_TAG.zip" -d "$ccPath" >/dev/null 2>&1
+    7z x "$ccPath/$ARCHIVE_TAG.zip" -o"$ccPath" >/dev/null 2>&1
 
     if [ -d "$ccPath/$DOMAIN" ]; then
         warn "custom_components/$DOMAIN directory already exist, cleaning up..."
