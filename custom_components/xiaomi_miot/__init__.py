@@ -24,6 +24,7 @@ from homeassistant.helpers.entity import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.components import persistent_notification
 from homeassistant.helpers.entity_component import EntityComponent
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.reload import async_integration_yaml_config
 import homeassistant.helpers.device_registry as dr
 import homeassistant.helpers.config_validation as cv
@@ -643,6 +644,11 @@ class BaseEntity(Entity):
     _config = None
     _model = None
 
+    async def async_added_to_hass(self):
+        await super().async_added_to_hass()
+        if self.hass:
+            self.hass.data[DOMAIN]['entities'][self.entity_id] = self
+
     @property
     def entity_category(self):
         cat = super().entity_category
@@ -733,7 +739,8 @@ class BaseEntity(Entity):
             return default
         if not isinstance(lst, list):
             lst = f'{lst}'.split(',')
-        return list(map(lambda x: x.strip(), lst))
+            lst = list(map(lambda x: x.strip(), lst))
+        return lst
 
     def custom_config_json(self, key=None, default=None):
         dic = self.custom_config(key)
@@ -771,6 +778,11 @@ class BaseEntity(Entity):
                 if k not in exl
             }
         return dat
+
+
+class MiCoordinatorEntity(CoordinatorEntity, BaseEntity):
+    async def async_added_to_hass(self):
+        await super().async_added_to_hass()
 
 
 class MiioEntity(BaseEntity):
@@ -884,8 +896,7 @@ class MiioEntity(BaseEntity):
         }
 
     async def async_added_to_hass(self):
-        if self.hass:
-            self.hass.data[DOMAIN]['entities'][self.entity_id] = self
+        await super().async_added_to_hass()
         if self.platform:
             self.update_custom_scan_interval()
             if self.platform.config_entry:
@@ -2225,8 +2236,7 @@ class BaseSubEntity(BaseEntity):
         return mar
 
     async def async_added_to_hass(self):
-        if self.hass:
-            self.hass.data[DOMAIN]['entities'][self.entity_id] = self
+        await super().async_added_to_hass()
         if self.platform:
             self.update_custom_scan_interval(only_custom=True)
         self._option['icon'] = self.custom_config('icon', self.icon)
